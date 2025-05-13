@@ -1,0 +1,31 @@
+{
+  "name": "global",
+  "profiles": [
+    "default"
+  ],
+  "label": null,
+  "version": "2",
+  "state": null,
+  "propertySources": [
+    {
+      "name": "postgresql",
+      "source": {
+        "tenant.default.id": "tenant.default.id.val",
+        "idp.gateway.clientSecret": "",
+        "mail.server.host": "iplanet.qubership.org",
+        "mail.server.auth": "false",
+        "management.health.mongo.enabled": "false",
+        "bss.tenant.default-id": "bss.tenant.default-id.val",
+        "spring.sleuth.sampler.percentage": "1",
+        "idp.clientId": "",
+        "apigateway.url": "http://internal-gateway-service:8080",
+        "mail.server.user": "admin",
+        "error.page.customerSpecifier": "default",
+        "apigateway.private.url": "http://private-gateway-service:8080",
+        "openshift.server.url": "https://k8s-apps.openshift.sdntest.qubership.org:6443",
+        "apigateway.public.url": "http://public-gateway-service:8080",
+        "mail.cloudAdminEmail": "TestTenantManagementGroup@qubership.org"
+      }
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+server:
+  port: 8080
+  max-http-request-header-size: ${HTTP_BUFFER_HEADER_MAX_SIZE:10240}
+  undertow:
+    # number of I/O threads to create for the worker
+    io-threads: ${XNIO_IO_THREAD:14}
+    # number of worker threads = io * 8
+    worker-threads: ${XNIO_WORK_THREAD:112}
+# TODO config database name should be with respect to multitenancy
+
+config-server:
+  encryption:
+    key: ${KS_DEFAULT_KEY}
+    key-password: ${SYM_KEY}
+apigateway:
+  external:
+    public:
+      url: http://localhost:8080/
+dbaas:
+  api:
+    address: ${API_DBAAS_ADDRESS:http://dbaas-aggregator.dbaas:8080}
+    username: ${DBAAS_CREDENTIALS_USERNAME:cluster-dba}
+    password: ${DBAAS_CREDENTIALS_PASSWORD:Bnmq5567_PO}
+  postgres:
+    datasource:
+      minimumIdle: 3
+
+consul:
+  enabled: ${CONSUL_ENABLED:false}
+  url: ${CONSUL_URL:}
+  token: ${CONSUL_TOKEN:}
+
+management:
+  tracing:
+    enabled: ${TRACING_ENABLED:false}
+    sampling:
+      probability : ${TRACING_SAMPLER_PROBABILISTIC:1.0}
+  zipkin:
+    tracing:
+      endpoint: http://${TRACING_HOST:nc-diagnostic-agent}:9411/api/v2/spans
+    service.name: config-server-${spring.application.cloud_namespace}
+    sender.type: web
+  info.defaults.enabled: true
+  endpoints:
+    web:
+      base-path: /
+      exposure.include: metrics, health, prometheus
+  endpoint:
+    health:
+      show-details: always
+      status.order: DOWN, OUT_OF_SERVICE, PROBLEM, WARNING, UNKNOWN, UP
+      probes:
+        enabled: true
+  health:
+    config:
+      enabled: false
+    mongo:
+      enabled: false
+
+cloud:
+  microservice:
+    name: ${MICROSERVICE_NAME:config-server}
+    namespace: ${CLOUD_NAMESPACE:unknown}
+    server_hostname: ${CLOUD_PUBLIC_HOST:unknown}
+
+spring:
+  cloud:
+    consul:
+      enabled: ${CONSUL_ENABLED:false}
+      config:
+        m2m:
+          enabled: false
+        prefixes: config/${CLOUD_NAMESPACE:unknown},logging/${CLOUD_NAMESPACE:unknown}
+        enabled: ${CONSUL_ENABLED:false}
+        watch:
+          enabled: ${CONSUL_ENABLED:false}
+    config:
+      enabled: false
+  config:
+    import: optional:consul:${CONSUL_URL:}
+  application:
+    name: ${MICROSERVICE_NAME:config-server}
+    namespace: ${CLOUD_NAMESPACE:unknown}
+    cloud_namespace: ${CLOUD_NAMESPACE:unknown}
+    server_hostname: ${CLOUD_PUBLIC_HOST:unknown}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration
+  main:
+    allow-bean-definition-overriding: true
+    lazy-initialization: true
+#Workaround for Spring Boot 2.6.x https://github.com/springfox/springfox/issues/3462
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+
+  cloud.config.server.vault:
+    scheme: ${VAULT_SCHEMA:http}
+    host: ${VAULT_HOST:localhost}
+    port: ${VAULT_PORT:8200}
+    authentication: KUBERNETES
+    kubernetes:
+      kubernetesPath: nc-${spring.application.server_hostname}_${spring.application.namespace}
+      role: ${spring.application.name}
+      serviceAccountTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+identity:
+  provider: ${IDENTITY_PROVIDER:keycloak}
+
+rest-client.pool:
+      max-idle-time-sec: ${REST_CLIENT_POOL_MAX_IDLE_TIME_SEC:20}
+      pending-acquire-timeout-sec: ${REST_CLIENT_POOL_PENDING_ACQUIRE_TIMEOUT_SEC:30}
+      evict-in-background-sec: ${REST_CLIENT_POOL_EVICT_IN_BACKGROUND_SEC:120}
+
+headers.allowed: ${ALLOWED_HEADERS:}
+
+logging.level:
+  root: ${LOG_LEVEL:INFO}
+  org.hibernate.engine.jdbc.env.internal.LobCreatorBuilderImpl: WARN
+
+baseline.fetch.properties: tenant.default.id,bss.tenant.default-id
